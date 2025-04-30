@@ -1,23 +1,42 @@
+{# Extends the base template to maintain consistent layout #}
 {% extends 'main/base.html' %}
+
+{# Load crispy forms for better form rendering #}
 {% load crispy_forms_tags %}
 
+{# Main content block that will be inserted into base.html #}
 {% block content %}
 <div class="container mt-4">
+    <!-- Centered row for the form -->
     <div class="row justify-content-center">
+        <!-- Form column (8/12 width on medium screens) -->
         <div class="col-md-8">
+            <!-- Card container with shadow effect -->
             <div class="card shadow">
+                <!-- Card header with primary background -->
                 <div class="card-header bg-primary text-white">
+                    <!-- Form title -->
                     <h3 class="mb-0">Create a New Ride</h3>
                 </div>
+                
+                <!-- Card body containing the form -->
                 <div class="card-body">
+                    <!-- Ride creation form -->
                     <form method="post">
+                        {# CSRF token for security #}
                         {% csrf_token %}
+                        
+                        {# Render form using crispy forms for better styling #}
                         {{ form|crispy }}
-                        <button type="submit" class="btn btn-primary mt-3">Create Ride</button>
+                        
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-primary mt-3">
+                            Create Ride
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
