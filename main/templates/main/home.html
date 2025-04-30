@@ -1,13 +1,27 @@
-﻿{% extends 'main/base.html' %}
+{# Extends the base template for consistent layout #}
+{% extends 'main/base.html' %}
+
+{# Load static files for images and other assets #}
 {% load static %}
+
+{# Main content block that will be inserted into base.html #}
 {% block content %}
+
+<!-- Hero section with ride request form -->
 <div class="hero-section">
     <div class="container text-center">
+        <!-- Main heading -->
         <h1 class="display-4 mb-4">Where to?</h1>
+        
+        <!-- Ride request form container -->
         <div class="row justify-content-center">
             <div class="col-md-8">
+                <!-- Form for requesting a ride -->
                 <form class="card card-body" action="{% url 'find_ride' %}" method="POST">
+                    {# CSRF token for security #}
                     {% csrf_token %}
+                    
+                    <!-- Pickup location input -->
                     <div class="mb-3">
                         <input type="text" 
                                name="pickup_location"
@@ -15,6 +29,8 @@
                                placeholder="Enter pickup location"
                                required>
                     </div>
+                    
+                    <!-- Destination input -->
                     <div class="mb-3">
                         <input type="text"
                                name="destination"
@@ -22,6 +38,8 @@
                                placeholder="Enter destination"
                                required>
                     </div>
+                    
+                    <!-- Submit button with loading state -->
                     <button type="submit" class="btn btn-primary btn-lg w-100" onclick="this.form.submit(); this.disabled=true;">
                         <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                         Request Ride
@@ -32,14 +50,21 @@
     </div>
 </div>
 
+<!-- Available rides section -->
 <div class="container my-5">
     <h2 class="mb-4">Available Rides Near You</h2>
+    
+    <!-- Rides grid -->
     <div class="row g-4">
+        {# Loop through available rides #}
         {% for ride in rides %}
         <div class="col-md-4">
+            <!-- Ride card with hover effects -->
             <div class="card ride-card h-100">
                 <div class="card-body">
+                    <!-- Driver info section -->
                     <div class="d-flex align-items-center mb-3">
+                        <!-- Driver avatar with fallback image -->
                         <img src="{% static 'images/driver-avatar.jpg' %}"
                              class="rounded-circle me-3"
                              width="50"
@@ -52,10 +77,14 @@
                             <small class="text-muted">4.9 ★</small>
                         </div>
                     </div>
+                    
+                    <!-- Ride locations -->
                     <div class="mb-3">
                         <p class="mb-1"><i class="fa-solid fa-location-dot text-primary"></i> {{ ride.start_location }}</p>
                         <p class="mb-0"><i class="fa-solid fa-flag-checkered text-success"></i> {{ ride.end_location }}</p>
                     </div>
+                    
+                    <!-- Price and request button -->
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">£{{ ride.fare }}</h4>
                         <button class="btn btn-primary">Request</button>
@@ -67,32 +96,42 @@
     </div>
 </div>
 
+<!-- Welcome and nearby rides section -->
 <div class="container">
     <div class="row">
         <div class="col-md-8 mx-auto">
+            <!-- Welcome heading -->
             <h1 class="text-center mb-4">Welcome to Blitz</h1>
             
+            {# Check if user is authenticated #}
             {% if user.is_authenticated %}
+                <!-- User location card -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title">Your Location: {{ user.userprofile.location }}</h5>
                     </div>
                 </div>
 
+                {# Check if there are nearby rides #}
                 {% if nearby_rides %}
+                    <!-- Nearby rides card -->
                     <div class="card">
                         <div class="card-header">
                             <h5 class="mb-0">Nearby Rides</h5>
                         </div>
                         <div class="list-group list-group-flush">
+                            {# Loop through nearby rides #}
                             {% for ride in nearby_rides %}
                             <div class="list-group-item">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
+                                        <!-- Ride route info -->
                                         <h6 class="mb-1">{{ ride.pickup_location }} → {{ ride.dropoff_location }}</h6>
                                         <p class="mb-1">Price: £{{ ride.amount }}</p>
                                         <small class="text-muted">Posted by: {{ ride.user.username }}</small>
                                     </div>
+                                    
+                                    {# Show accept button if ride isn't the user's own #}
                                     {% if user != ride.user %}
                                         <a href="{% url 'accept_ride' ride.id %}" 
                                            class="btn btn-success btn-sm"
@@ -100,6 +139,7 @@
                                             Accept
                                         </a>
                                     {% else %}
+                                        <!-- Badge for user's own rides -->
                                         <span class="badge bg-info">Your Ride</span>
                                     {% endif %}
                                 </div>
@@ -108,11 +148,13 @@
                         </div>
                     </div>
                 {% else %}
+                    <!-- No rides available message -->
                     <div class="alert alert-info">
                         No nearby rides available at the moment.
                     </div>
                 {% endif %}
             {% else %}
+                <!-- Guest user call-to-action -->
                 <div class="text-center">
                     <p class="lead">Sign up or log in to see rides near you!</p>
                     <div class="mt-4">
