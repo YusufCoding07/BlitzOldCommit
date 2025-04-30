@@ -1,16 +1,23 @@
-﻿{% extends 'main/base.html' %}
+{# Extends the base template to maintain consistent layout #}
+{% extends 'main/base.html' %}
+
+{# Load custom template filters (like 'absolute' filter) #}
 {% load custom_filters %}
 
+{# Main content block that will be inserted into base.html #}
 {% block content %}
 <div class="container">
+    <!-- Page heading -->
     <h1 class="mb-4">Transactions</h1>
 
-    <!-- Statistics Cards -->
+    <!-- Statistics Cards Section -->
     <div class="row mb-4">
+        <!-- Earnings Card -->
         <div class="col-md-6">
             <div class="card bg-success text-white">
                 <div class="card-body">
                     <h5 class="card-title">Earnings</h5>
+                    {# Conditional display for earnings data #}
                     {% if has_earnings %}
                         <p class="mb-1">Total: £{{ stats.total_earnings|floatformat:2 }}</p>
                         <p class="mb-0">Average: £{{ stats.avg_earnings|floatformat:2 }}</p>
@@ -21,10 +28,13 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Spendings Card -->
         <div class="col-md-6">
             <div class="card bg-danger text-white">
                 <div class="card-body">
                     <h5 class="card-title">Spendings</h5>
+                    {# Conditional display for spendings data #}
                     {% if has_spendings %}
                         <p class="mb-1">Total: £{{ stats.total_spendings|floatformat:2 }}</p>
                         <p class="mb-0">Average: £{{ stats.avg_spendings|floatformat:2 }}</p>
@@ -37,17 +47,22 @@
         </div>
     </div>
 
-    <!-- Filter Buttons -->
+    <!-- Transaction Type Filter Buttons -->
     <div class="mb-4">
         <div class="btn-group" role="group" aria-label="Transaction type filter">
+            <!-- All Transactions Filter Button -->
             <a href="{% url 'transactions' %}?type=all" 
                class="btn btn-outline-primary {% if transaction_type == 'all' or not transaction_type %}active{% endif %}">
                 All Transactions
             </a>
+            
+            <!-- Earnings Filter Button -->
             <a href="{% url 'transactions' %}?type=earnings" 
                class="btn btn-outline-success {% if transaction_type == 'earnings' %}active{% endif %}">
                 Earnings
             </a>
+            
+            <!-- Spendings Filter Button -->
             <a href="{% url 'transactions' %}?type=spendings" 
                class="btn btn-outline-danger {% if transaction_type == 'spendings' %}active{% endif %}">
                 Spendings
@@ -55,19 +70,30 @@
         </div>
     </div>
 
-    <!-- Transactions List -->
+    <!-- Transactions List Section -->
     {% if transactions %}
         <div class="list-group">
+            {# Loop through each transaction #}
             {% for transaction in transactions %}
             <div class="list-group-item">
                 <div class="d-flex w-100 justify-content-between">
+                    <!-- Ride route information -->
                     <h5 class="mb-1">{{ transaction.pickup_location }} → {{ transaction.dropoff_location }}</h5>
+                    
+                    <!-- Transaction amount with conditional coloring -->
                     <span class="text-{% if transaction.amount > 0 %}success{% else %}danger{% endif %} h5">
+                        {# Use absolute filter to display positive amounts #}
                         £{{ transaction.amount|absolute }}
                     </span>
                 </div>
+                
+                <!-- Transaction description -->
                 <p class="mb-1">{{ transaction.description }}</p>
+                
+                <!-- Transaction timestamp -->
                 <small class="text-muted">{{ transaction.created_at }}</small>
+                
+                <!-- Transaction type badge -->
                 {% if transaction.amount > 0 %}
                     <span class="badge bg-success">Earned</span>
                 {% else %}
@@ -77,6 +103,7 @@
             {% endfor %}
         </div>
     {% else %}
+        {# Different empty state messages based on filter #}
         {% if transaction_type == 'earnings' and not has_earnings %}
             <div class="alert alert-info">
                 No earnings found.
