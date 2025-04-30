@@ -1,45 +1,84 @@
-﻿{% extends 'main/base.html' %}
+{# Extends the base template for consistent site layout #}
+{% extends 'main/base.html' %}
+
+{# Load static files for potential custom styling #}
 {% load static %}
+
+{# Main content block that will be inserted into base.html #}
 {% block content %}
 <div class="container my-5">
+    <!-- Center the login card horizontally -->
     <div class="row justify-content-center">
+        <!-- Set column width to 6/12 on medium screens -->
         <div class="col-md-6">
+            <!-- Card with shadow effect -->
             <div class="card shadow">
                 <div class="card-body p-5">
+                    <!-- Login form heading -->
                     <h2 class="mb-4 text-center">Welcome Back</h2>
                     
+                    {# Display error message if login fails #}
                     {% if form.errors %}
                     <div class="alert alert-danger">
                         Your username and password didn't match. Please try again.
                     </div>
                     {% endif %}
 
+                    <!-- Login form -->
                     <form method="post">
+                        {# CSRF token for security protection #}
                         {% csrf_token %}
+                        
+                        {# Hidden field to redirect after successful login #}
                         <input type="hidden" name="next" value="{{ next }}">
+                        
+                        <!-- Username input field -->
                         <div class="mb-3">
                             <label class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control form-control-lg" required>
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-control form-control-lg" 
+                                   required>
                         </div>
+                        
+                        <!-- Password input field -->
                         <div class="mb-4">
                             <label class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control form-control-lg" required>
+                            <input type="password" 
+                                   name="password" 
+                                   class="form-control form-control-lg" 
+                                   required>
                         </div>
+                        
+                        <!-- Remember me checkbox -->
                         <div class="mb-3 form-check">
-                            <input type="checkbox" name="remember" class="form-check-input" id="remember">
+                            <input type="checkbox" 
+                                   name="remember" 
+                                   class="form-check-input" 
+                                   id="remember">
                             <label class="form-check-label" for="remember">Remember me</label>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-lg w-100">Login</button>
+                        
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            Login
+                        </button>
                     </form>
+                    
+                    <!-- Sign up link section -->
                     <div class="mt-4 text-center">
                         <p class="mb-0">
                             Don't have an account?
                             <a href="{% url 'signup' %}" class="text-decoration-none">Sign up</a>
                         </p>
                     </div>
+                    
+                    <!-- Password reset link -->
                     <div class="mt-2 text-center">
                         <small>
-                            <a href="{% url 'password_reset' %}" class="text-decoration-none">Forgot password?</a>
+                            <a href="{% url 'password_reset' %}" class="text-decoration-none">
+                                Forgot password?
+                            </a>
                         </small>
                     </div>
                 </div>
