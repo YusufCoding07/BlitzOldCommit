@@ -1,18 +1,28 @@
-﻿<!-- registration/signup.html -->
+{# Registration/Signup Template #}
+{# Extends the base template for consistent layout #}
 {% extends 'main/base.html' %}
+
+{# Load crispy forms for better form field rendering #}
 {% load crispy_forms_tags %}
 
+{# Main content block that will be inserted into base.html #}
 {% block content %}
 <div class="container">
+    <!-- Center the form horizontally -->
     <div class="row justify-content-center">
+        <!-- Set column width to 6/12 on medium screens -->
         <div class="col-md-6">
+            <!-- Card container for the signup form -->
             <div class="card">
                 <div class="card-body">
+                    <!-- Form heading centered -->
                     <h2 class="card-title text-center mb-4">Sign Up</h2>
                     
+                    {# Display messages if any exist #}
                     {% if messages %}
                     <div class="messages mb-3">
                         {% for message in messages %}
+                        <!-- Dynamic alert with message type styling -->
                         <div class="alert alert-{{ message.tags }}">
                             {{ message }}
                         </div>
@@ -20,24 +30,46 @@
                     </div>
                     {% endif %}
 
+                    <!-- Signup form -->
                     <form method="post">
+                        {# CSRF token for security protection #}
                         {% csrf_token %}
+                        
+                        <!-- Username field rendered with crispy forms -->
                         {{ form.username|as_crispy_field }}
+                        
+                        <!-- Email field rendered with crispy forms -->
                         {{ form.email|as_crispy_field }}
+                        
+                        <!-- Custom location input (not using crispy forms) -->
                         <div class="form-group">
                             <label for="id_location">Location</label>
-                            <input type="text" name="location" class="form-control" 
-                                   id="id_location" placeholder="Enter your city (e.g., London)" 
+                            <input type="text" 
+                                   name="location" 
+                                   class="form-control" 
+                                   id="id_location" 
+                                   placeholder="Enter your city (e.g., London)" 
                                    required>
-                            <small class="form-text text-muted">Enter your city or area</small>
+                            <small class="form-text text-muted">
+                                Enter your city or area
+                            </small>
                         </div>
+                        
+                        <!-- Password fields rendered with crispy forms -->
                         {{ form.password1|as_crispy_field }}
                         {{ form.password2|as_crispy_field }}
-                        <button type="submit" class="btn btn-primary w-100 mt-3">Sign Up</button>
+                        
+                        <!-- Form submission button -->
+                        <button type="submit" class="btn btn-primary w-100 mt-3">
+                            Sign Up
+                        </button>
                     </form>
 
+                    <!-- Login link for existing users -->
                     <div class="mt-3 text-center">
-                        <p>Already have an account? <a href="{% url 'login' %}">Log In</a></p>
+                        <p>Already have an account? 
+                           <a href="{% url 'login' %}">Log In</a>
+                        </p>
                     </div>
                 </div>
             </div>
