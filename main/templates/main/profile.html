@@ -1,14 +1,25 @@
+{# Extends the base template to maintain consistent layout #}
 {% extends 'main/base.html' %}
+
+{# Load static files for images and assets #}
 {% load static %}
+
+{# Load crispy forms for better form rendering #}
 {% load crispy_forms_tags %}
+
+{# Load custom template filters #}
 {% load custom_filters %}
 
+{# Main content block that will be inserted into base.html #}
 {% block content %}
 <div class="container">
     <div class="row">
+        <!-- Left Column - Profile Information -->
         <div class="col-md-4">
+            <!-- Profile Card -->
             <div class="card mb-4">
                 <div class="card-body text-center">
+                    {# Profile picture with fallback to default #}
                     {% if user.userprofile.profile_picture %}
                         <img src="{{ user.userprofile.profile_picture.url }}" 
                              class="rounded-circle mb-3" 
@@ -21,21 +32,26 @@
                              style="width: 150px; height: 150px; object-fit: cover;">
                     {% endif %}
                     
+                    <!-- User information -->
                     <h4 class="card-title">{{ user.username }}</h4>
                     <p class="text-muted">{{ user.email }}</p>
                     
+                    {# Display location if available #}
                     {% if user.userprofile.location %}
                     <p><strong>Location:</strong> {{ user.userprofile.location }}</p>
                     {% endif %}
                     
+                    {# Display bio if available #}
                     {% if user.userprofile.bio %}
                     <p><strong>Bio:</strong><br>{{ user.userprofile.bio }}</p>
                     {% endif %}
                     
+                    <!-- Button to trigger profile update modal -->
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
                         Update Profile
                     </button>
                     
+                    {# Driver application/status section #}
                     {% if not user.userprofile.is_driver %}
                     <a href="{% url 'driver_application' %}" class="btn btn-success mt-2">Become a Driver</a>
                     {% else %}
@@ -54,6 +70,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Balance Summary</h5>
                     <div class="row">
+                        <!-- Earnings Summary -->
                         <div class="col-12 mb-3">
                             <div class="card bg-success text-white">
                                 <div class="card-body py-2">
@@ -68,6 +85,8 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Spendings Summary -->
                         <div class="col-12">
                             <div class="card bg-danger text-white">
                                 <div class="card-body py-2">
@@ -87,20 +106,25 @@
             </div>
         </div>
         
+        <!-- Right Column - Transaction History -->
         <div class="col-md-8">
             <div class="card">
                 <div class="card-body">
+                    <!-- Transaction Filter Header -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="card-title mb-0">Recent Transactions</h5>
                         <div class="btn-group" role="group" aria-label="Transaction type filter">
+                            <!-- All Transactions Filter -->
                             <a href="{% url 'profile' %}?transaction_type=all" 
                                class="btn btn-outline-primary {% if request.GET.transaction_type == 'all' or not request.GET.transaction_type %}active{% endif %}">
                                 All
                             </a>
+                            <!-- Earnings Filter -->
                             <a href="{% url 'profile' %}?transaction_type=earnings" 
                                class="btn btn-outline-success {% if request.GET.transaction_type == 'earnings' %}active{% endif %}">
                                 Earnings
                             </a>
+                            <!-- Spendings Filter -->
                             <a href="{% url 'profile' %}?transaction_type=spendings" 
                                class="btn btn-outline-danger {% if request.GET.transaction_type == 'spendings' %}active{% endif %}">
                                 Spendings
@@ -108,12 +132,15 @@
                         </div>
                     </div>
 
+                    {# Transaction list or empty state #}
                     {% if transactions %}
                     <div class="list-group">
                         {% for transaction in transactions %}
                         <div class="list-group-item">
                             <div class="d-flex w-100 justify-content-between">
+                                <!-- Transaction route -->
                                 <h6 class="mb-1">{{ transaction.pickup_location }} → {{ transaction.dropoff_location }}</h6>
+                                <!-- Transaction amount with conditional styling -->
                                 <small class="text-{% if transaction.amount > 0 %}success{% else %}danger{% endif %}">
                                     £{{ transaction.amount|absolute }}
                                     {% if transaction.amount > 0 %}
@@ -123,7 +150,9 @@
                                     {% endif %}
                                 </small>
                             </div>
+                            <!-- Transaction description -->
                             <p class="mb-1">{{ transaction.description }}</p>
+                            <!-- Transaction timestamp -->
                             <small class="text-muted">{{ transaction.created_at }}</small>
                         </div>
                         {% endfor %}
@@ -141,13 +170,19 @@
 <div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
+            <!-- Modal Header -->
             <div class="modal-header">
                 <h5 class="modal-title" id="updateProfileModalLabel">Update Profile</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            
+            <!-- Modal Form -->
             <form method="post" enctype="multipart/form-data">
                 <div class="modal-body">
+                    {# CSRF token for security #}
                     {% csrf_token %}
+                    
+                    {# Crispy form rendering #}
                     {{ form|crispy }}
                 </div>
                 <div class="modal-footer">
