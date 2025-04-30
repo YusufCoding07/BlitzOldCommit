@@ -17,9 +17,21 @@ Including another URLconf
 # Blitz3/urls.py
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib.auth.views import LogoutView
+from main import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('main.urls')),  # Your app's URLs
-    path('accounts/', include('django.contrib.auth.urls')),  # Add this line
+    path('', include('main.urls')),  # Main app URLs
+    path('accounts/', include('django.contrib.auth.urls')),  # Auth URLs
+    path('logout/', LogoutView.as_view(next_page='home'), name='logout'),  # Add this line
+    path('accept-ride/<int:ride_id>/', views.accept_ride, name='accept_ride'),
+    path('signup/', views.signup, name='signup'),
 ]
+
+# Add static and media URLs for development
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

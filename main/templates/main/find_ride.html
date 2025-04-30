@@ -1,0 +1,75 @@
+{% extends 'main/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Find Your Ride</h1>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get">
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                </div>
+            </div>
+            
+            {% if rides %}
+            <div class="mt-4">
+                <h2>Available Rides</h2>
+                <div class="list-group">
+                    {% for ride in rides %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5>{{ ride.pickup_location }} → {{ ride.dropoff_location }}</h5>
+                                <p class="mb-0">Price: £{{ ride.amount }}</p>
+                                <small class="text-muted">Posted by: {{ ride.user.username }}</small>
+                                
+                                <!-- Debug info (remove in production) -->
+                                {% if user.is_authenticated %}
+                                <div class="small text-muted">
+                                    <p>Is driver: {{ user.userprofile.is_driver }}</p>
+                                    <p>Driver status: {{ user.userprofile.driver_status }}</p>
+                                    <p>Is poster: {% if ride.user.id == user.id %}Yes{% else %}No{% endif %}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Show buttons based on user role -->
+                            {% if ride.user.id == user.id %}
+                                <span class="badge bg-info">Your Ride</span>
+                            {% else %}
+                                {% if user.userprofile.is_driver %}
+                                    {% if user.userprofile.driver_status == 'approved' %}
+                                        <a href="{% url 'accept_ride' ride.id %}" 
+                                           class="btn btn-success"
+                                           onclick="return confirm('Are you sure you want to accept this ride?')">
+                                            Accept Ride (Driver)
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-warning">Driver Approval Pending</span>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{% url 'accept_ride' ride.id %}" 
+                                       class="btn btn-primary"
+                                       onclick="return confirm('Are you sure you want to accept this ride?')">
+                                        Accept Ride
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="mt-4 alert alert-info">
+                No rides found matching your criteria.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

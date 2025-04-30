@@ -8,8 +8,11 @@ https://docs.djangoproject.com/en/5.1/howto/deployment/asgi/
 """
 
 import os
-
 from django.core.asgi import get_asgi_application
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Blitz3.settings')
 

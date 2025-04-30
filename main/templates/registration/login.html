@@ -7,15 +7,27 @@
             <div class="card shadow">
                 <div class="card-body p-5">
                     <h2 class="mb-4 text-center">Welcome Back</h2>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        Your username and password didn't match. Please try again.
+                    </div>
+                    {% endif %}
+
                     <form method="post">
                         {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ next }}">
                         <div class="mb-3">
                             <label class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control form-control-lg">
+                            <input type="text" name="username" class="form-control form-control-lg" required>
                         </div>
                         <div class="mb-4">
                             <label class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control form-control-lg">
+                            <input type="password" name="password" class="form-control form-control-lg" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="remember" class="form-check-input" id="remember">
+                            <label class="form-check-label" for="remember">Remember me</label>
                         </div>
                         <button type="submit" class="btn btn-primary btn-lg w-100">Login</button>
                     </form>
@@ -24,6 +36,11 @@
                             Don't have an account?
                             <a href="{% url 'signup' %}" class="text-decoration-none">Sign up</a>
                         </p>
+                    </div>
+                    <div class="mt-2 text-center">
+                        <small>
+                            <a href="{% url 'password_reset' %}" class="text-decoration-none">Forgot password?</a>
+                        </small>
                     </div>
                 </div>
             </div>

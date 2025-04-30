@@ -7,6 +7,13 @@
         <div class="card-body">
             <h2 class="card-title mb-4">Update Profile</h2>
 
+            <!-- Add error handling at top -->
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                Please correct the errors below.
+            </div>
+            {% endif %}
+
             <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
                 {% csrf_token %}
 
@@ -34,8 +41,15 @@
                             <input type="file"
                                    name="profile_picture"
                                    accept="image/*"
-                                   class="form-control"
-                                   id="id_profile_picture">
+                                   class="form-control {% if form.profile_picture.errors %}is-invalid{% endif %}"
+                                   id="id_profile_picture"
+                                   onchange="validateFileSize(this)"
+                                   max="5242880">
+                            {% if form.profile_picture.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.profile_picture.errors.0 }}
+                            </div>
+                            {% endif %}
                             <div class="form-text">
                                 Recommended size: 200x200 pixels (JPEG or PNG)
                             </div>
@@ -71,6 +85,16 @@
                     </button>
                 </div>
             </form>
+
+            <!-- Add success message handling -->
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
         </div>
     </div>
 </div>
@@ -81,4 +105,13 @@
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
 </style>
+
+<script>
+const validateFileSize = (input) => {
+    if (input.files[0].size > 5242880) { // 5MB
+        alert('File size must be less than 5MB');
+        input.value = '';
+    }
+};
+</script>
 {% endblock %}

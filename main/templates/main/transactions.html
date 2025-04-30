@@ -1,0 +1,95 @@
+﻿{% extends 'main/base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Transactions</h1>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Earnings</h5>
+                    {% if has_earnings %}
+                        <p class="mb-1">Total: £{{ stats.total_earnings|floatformat:2 }}</p>
+                        <p class="mb-0">Average: £{{ stats.avg_earnings|floatformat:2 }}</p>
+                    {% else %}
+                        <p class="mb-1">Total: £0.00</p>
+                        <p class="mb-0">Average: £0.00</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Spendings</h5>
+                    {% if has_spendings %}
+                        <p class="mb-1">Total: £{{ stats.total_spendings|floatformat:2 }}</p>
+                        <p class="mb-0">Average: £{{ stats.avg_spendings|floatformat:2 }}</p>
+                    {% else %}
+                        <p class="mb-1">Total: £0.00</p>
+                        <p class="mb-0">Average: £0.00</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="mb-4">
+        <div class="btn-group" role="group" aria-label="Transaction type filter">
+            <a href="{% url 'transactions' %}?type=all" 
+               class="btn btn-outline-primary {% if transaction_type == 'all' or not transaction_type %}active{% endif %}">
+                All Transactions
+            </a>
+            <a href="{% url 'transactions' %}?type=earnings" 
+               class="btn btn-outline-success {% if transaction_type == 'earnings' %}active{% endif %}">
+                Earnings
+            </a>
+            <a href="{% url 'transactions' %}?type=spendings" 
+               class="btn btn-outline-danger {% if transaction_type == 'spendings' %}active{% endif %}">
+                Spendings
+            </a>
+        </div>
+    </div>
+
+    <!-- Transactions List -->
+    {% if transactions %}
+        <div class="list-group">
+            {% for transaction in transactions %}
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ transaction.pickup_location }} → {{ transaction.dropoff_location }}</h5>
+                    <span class="text-{% if transaction.amount > 0 %}success{% else %}danger{% endif %} h5">
+                        £{{ transaction.amount|absolute }}
+                    </span>
+                </div>
+                <p class="mb-1">{{ transaction.description }}</p>
+                <small class="text-muted">{{ transaction.created_at }}</small>
+                {% if transaction.amount > 0 %}
+                    <span class="badge bg-success">Earned</span>
+                {% else %}
+                    <span class="badge bg-danger">Spent</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {% if transaction_type == 'earnings' and not has_earnings %}
+            <div class="alert alert-info">
+                No earnings found.
+            </div>
+        {% elif transaction_type == 'spendings' and not has_spendings %}
+            <div class="alert alert-info">
+                No spendings found.
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                No transactions found.
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

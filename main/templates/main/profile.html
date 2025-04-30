@@ -1,0 +1,161 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    {% if user.userprofile.profile_picture %}
+                        <img src="{{ user.userprofile.profile_picture.url }}" 
+                             class="rounded-circle mb-3" 
+                             alt="Profile Picture"
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="/media/profile_pics/default.png" 
+                             class="rounded-circle mb-3" 
+                             alt="Default Profile Picture"
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                    
+                    <h4 class="card-title">{{ user.username }}</h4>
+                    <p class="text-muted">{{ user.email }}</p>
+                    
+                    {% if user.userprofile.location %}
+                    <p><strong>Location:</strong> {{ user.userprofile.location }}</p>
+                    {% endif %}
+                    
+                    {% if user.userprofile.bio %}
+                    <p><strong>Bio:</strong><br>{{ user.userprofile.bio }}</p>
+                    {% endif %}
+                    
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
+                        Update Profile
+                    </button>
+                    
+                    {% if not user.userprofile.is_driver %}
+                    <a href="{% url 'driver_application' %}" class="btn btn-success mt-2">Become a Driver</a>
+                    {% else %}
+                    <p class="mt-2">
+                        Driver Status: 
+                        <span class="badge bg-{% if user.userprofile.driver_status == 'approved' %}success{% elif user.userprofile.driver_status == 'pending' %}warning{% else %}danger{% endif %}">
+                            {{ user.userprofile.driver_status|title }}
+                        </span>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Transaction Summary Card -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Balance Summary</h5>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title mb-1">Earnings</h6>
+                                    {% if stats.has_earnings %}
+                                        <p class="mb-1 small">Total: £{{ stats.total_earnings|floatformat:2 }}</p>
+                                        <p class="mb-0 small">Average: £{{ stats.avg_earnings|floatformat:2 }}</p>
+                                    {% else %}
+                                        <p class="mb-1 small">Total: £0.00</p>
+                                        <p class="mb-0 small">Average: £0.00</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title mb-1">Spendings</h6>
+                                    {% if stats.has_spendings %}
+                                        <p class="mb-1 small">Total: £{{ stats.total_spendings|floatformat:2 }}</p>
+                                        <p class="mb-0 small">Average: £{{ stats.avg_spendings|floatformat:2 }}</p>
+                                    {% else %}
+                                        <p class="mb-1 small">Total: £0.00</p>
+                                        <p class="mb-0 small">Average: £0.00</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Recent Transactions</h5>
+                        <div class="btn-group" role="group" aria-label="Transaction type filter">
+                            <a href="{% url 'profile' %}?transaction_type=all" 
+                               class="btn btn-outline-primary {% if request.GET.transaction_type == 'all' or not request.GET.transaction_type %}active{% endif %}">
+                                All
+                            </a>
+                            <a href="{% url 'profile' %}?transaction_type=earnings" 
+                               class="btn btn-outline-success {% if request.GET.transaction_type == 'earnings' %}active{% endif %}">
+                                Earnings
+                            </a>
+                            <a href="{% url 'profile' %}?transaction_type=spendings" 
+                               class="btn btn-outline-danger {% if request.GET.transaction_type == 'spendings' %}active{% endif %}">
+                                Spendings
+                            </a>
+                        </div>
+                    </div>
+
+                    {% if transactions %}
+                    <div class="list-group">
+                        {% for transaction in transactions %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ transaction.pickup_location }} → {{ transaction.dropoff_location }}</h6>
+                                <small class="text-{% if transaction.amount > 0 %}success{% else %}danger{% endif %}">
+                                    £{{ transaction.amount|absolute }}
+                                    {% if transaction.amount > 0 %}
+                                        (Earned)
+                                    {% else %}
+                                        (Spent)
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <p class="mb-1">{{ transaction.description }}</p>
+                            <small class="text-muted">{{ transaction.created_at }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No transactions found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Profile Modal -->
+<div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateProfileModalLabel">Update Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
