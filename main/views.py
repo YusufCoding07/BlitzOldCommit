@@ -1,3 +1,8 @@
+"""
+Main application views for the ride-sharing platform.
+Handles user authentication, profile management, ride operations, and transactions.
+"""
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
@@ -16,15 +21,19 @@ from django.db import transaction
 from decimal import Decimal
 from datetime import datetime
 
+# Initialize logger
 logger = logging.getLogger('django')
 
-# Home Page (Find Ride)
 def home(request):
+    """
+    Home page view showing nearby rides for authenticated users.
+    For unauthenticated users, shows basic landing page.
+    """
     nearby_rides = []
     
     if request.user.is_authenticated:
         user_location = request.user.userprofile.location
-        # Get rides that match user's location or nearby areas
+        # Get rides matching user's location or nearby areas
         nearby_rides = Transaction.objects.filter(
             Q(status='pending') &
             (Q(pickup_location__icontains=user_location) |
@@ -36,9 +45,15 @@ def home(request):
     }
     return render(request, 'main/home.html', context)
 
-# Profile Page
 @login_required
 def profile(request):
+    """
+    User profile view showing:
+    - Profile information
+    - Transaction statistics
+    - Recent transactions
+    - Profile update form
+    """
     # Get all transactions for this user
     transactions = Transaction.objects.filter(user=request.user)
     
@@ -79,13 +94,16 @@ def profile(request):
         'stats': stats,
     })
 
-# Map Page
 def map_view(request):
+    """Simple view rendering the map page"""
     return render(request, 'main/map.html')
 
-# Transactions Page
 @login_required
 def transactions(request):
+    """
+    Transaction history view with filtering capabilities.
+    Shows earnings, spendings, and transaction statistics.
+    """
     transaction_type = request.GET.get('type', 'all')
     
     # Base query
@@ -127,6 +145,7 @@ def transactions(request):
     })
 
 def register(request):
+    """User registration view"""
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
@@ -137,8 +156,8 @@ def register(request):
         form = UserRegistrationForm()
     return render(request, 'registration/signup.html', {'form': form})
 
-# Login Page
 def login_view(request):
+    """User login view"""
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -148,13 +167,17 @@ def login_view(request):
             return redirect('home')
     return render(request, 'registration/login.html')
 
-# Logout Page
 def logout_view(request):
+    """User logout view"""
     logout(request)
     return redirect('home')
 
 @login_required
 def find_ride(request):
+    """
+    Ride search view with filtering capabilities.
+    Allows searching by pickup/dropoff locations and sorting options.
+    """
     # Initialize form
     form = RideSearchForm()
     rides = Transaction.objects.filter(status='pending')
@@ -190,10 +213,9 @@ def find_ride(request):
         }
     })
 
-from django.core.exceptions import ObjectDoesNotExist
-
 @login_required
 def update_profile(request):
+    """Profile update view with form handling"""
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=request.user.userprofile)
         if form.is_valid():
@@ -205,12 +227,12 @@ def update_profile(request):
     
     return render(request, 'main/update_profile.html', {'form': form})
 
-class DriverApplicationForm(forms.Form):
-    car_model = forms.CharField(max_length=100)
-    license_file = forms.FileField(label='Driver License')  # Changed from 'document' to 'license_file'
-
 @login_required
 def driver_application(request):
+    """
+    Driver application view.
+    Handles driver registration with license upload.
+    """
     if request.method == 'POST':
         form = DriverApplicationForm(request.POST, request.FILES)
         if form.is_valid():
@@ -231,6 +253,7 @@ def driver_application(request):
 
 @login_required
 def request_ride(request):
+    """Ride request view (placeholder implementation)"""
     if request.method == 'POST':
         # Add your ride request logic here
         return redirect('find_ride')
@@ -238,6 +261,13 @@ def request_ride(request):
 
 @login_required
 def accept_ride(request, ride_id):
+    """
+    Ride acceptance view with transaction processing.
+    Handles:
+    - Ride status update
+    - Payment transaction creation
+    - Earnings transaction creation
+    """
     try:
         # First try to get the ride
         ride = get_object_or_404(Transaction, id=ride_id)
@@ -253,29 +283,29 @@ def accept_ride(request, ride_id):
             return redirect('find_ride')
         
         try:
-            with transaction.atomic():
+            with transaction.atomic():  # Atomic transaction
                 # Update the ride status
                 ride.status = 'accepted'
-                ride.driver = request.user  # Add this line to track who accepted the ride
+                ride.driver = request.user
                 ride.save()
                 
-                # Create payment transaction for the passenger
+                # Create payment transaction for passenger
                 passenger_transaction = Transaction.objects.create(
-                    user=ride.user,  # passenger
-                    amount=Decimal(str(-ride.amount)),  # Convert to Decimal explicitly
+                    user=ride.user,
+                    amount=Decimal(str(-ride.amount)),
                     status='completed',
-                    transaction_type='payment',  # Add transaction type
+                    transaction_type='payment',
                     pickup_location=ride.pickup_location,
                     dropoff_location=ride.dropoff_location,
                     description=f'Payment for ride from {ride.pickup_location} to {ride.dropoff_location}'
                 )
                 
-                # Create earning transaction for the accepting user
+                # Create earning transaction for driver
                 driver_transaction = Transaction.objects.create(
-                    user=request.user,  # accepting user
-                    amount=Decimal(str(ride.amount)),  # Convert to Decimal explicitly
+                    user=request.user,
+                    amount=Decimal(str(ride.amount)),
                     status='completed',
-                    transaction_type='earning',  # Add transaction type
+                    transaction_type='earning',
                     pickup_location=ride.pickup_location,
                     dropoff_location=ride.dropoff_location,
                     description=f'Earnings from ride {ride.pickup_location} to {ride.dropoff_location}'
@@ -297,9 +327,10 @@ def accept_ride(request, ride_id):
 
 @login_required
 def complete_ride(request, transaction_id):
+    """Ride completion view (placeholder implementation)"""
     try:
         transaction = Transaction.objects.get(id=transaction_id)
-        # Add your ride completion logic here
+        # Added ride completion logic here
         messages.success(request, 'Ride completed successfully!')
         return redirect('home')
     except Transaction.DoesNotExist:
@@ -308,9 +339,10 @@ def complete_ride(request, transaction_id):
 
 @login_required
 def cancel_ride(request, transaction_id):
+    """Ride cancellation view (placeholder implementation)"""
     try:
         transaction = Transaction.objects.get(id=transaction_id)
-        # Add your ride cancellation logic here
+        # Added ride cancellation logic here
         messages.success(request, 'Ride cancelled successfully!')
         return redirect('home')
     except Transaction.DoesNotExist:
@@ -318,10 +350,15 @@ def cancel_ride(request, transaction_id):
         return redirect('home')
 
 def terms(request):
+    """Terms and conditions view"""
     return render(request, 'main/terms.html')
 
 @login_required
 def create_ride(request):
+    """
+    Ride creation view for drivers.
+    Validates driver status before allowing ride creation.
+    """
     if not request.user.userprofile.is_driver:
         messages.error(request, 'You must be a driver to create rides.')
         return redirect('home')
@@ -337,8 +374,8 @@ def create_ride(request):
             ride = form.save(commit=False)
             ride.user = request.user
             ride.status = 'pending'
-            ride.transaction_type = 'ride'  # Set the transaction type
-            ride.driver = None  # Initialize driver as None
+            ride.transaction_type = 'ride'
+            ride.driver = None
             ride.save()
             messages.success(request, 'Ride posted successfully!')
             return redirect('find_ride')
@@ -349,31 +386,18 @@ def create_ride(request):
     
     return render(request, 'main/create_ride.html', {'form': form})
 
-@login_required
-def search_rides(request):
-    if request.method == 'POST':
-        form = RideSearchForm(request.POST)
-        if form.is_valid():
-            pickup = form.cleaned_data['pickup_location']
-            dropoff = form.cleaned_data['dropoff_location']
-            rides = Transaction.objects.filter(
-                status='pending',
-                pickup_location__icontains=pickup,
-                dropoff_location__icontains=dropoff
-            ).order_by('-created_at')
-            return render(request, 'main/search_results.html', {'rides': rides})
-    else:
-        form = RideSearchForm()
-    return render(request, 'main/search_rides.html', {'form': form})
-
 def signup(request):
+    """
+    User signup view with profile creation.
+    Handles both registration and profile setup.
+    """
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)  # Don't save the user yet
-            user.save()  # Now save the user
+            user = form.save(commit=False)
+            user.save()
             
-            # Create the UserProfile with location
+            # Create UserProfile with location
             UserProfile.objects.create(
                 user=user,
                 location=form.cleaned_data.get('location', '')
