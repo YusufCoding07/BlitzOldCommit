@@ -1,17 +1,34 @@
-{% extends 'main/base.html' %}  <!-- Update this if your base template has different path -->
-{% load crispy_forms_tags %}  <!-- Add this line -->
+{# Extends the base template (update path if base template is elsewhere) #}
+{% extends 'main/base.html' %}
 
+{# Load crispy_forms_tags for enhanced form rendering #}
+{% load crispy_forms_tags %}
+
+{# Main content block that will be inserted into base.html #}
 {% block content %}
 <div class="container">
+    <!-- Center the content horizontally -->
     <div class="row justify-content-center">
+        <!-- Set column width to 8/12 on medium screens and up -->
         <div class="col-md-8">
+            <!-- Card container for the application form -->
             <div class="card">
                 <div class="card-body">
+                    <!-- Application title -->
                     <h2 class="card-title">Driver Application</h2>
+                    
+                    <!-- Application form with file upload capability -->
                     <form method="post" enctype="multipart/form-data">
+                        {# CSRF token for security protection #}
                         {% csrf_token %}
+                        
+                        {# Render form using crispy forms for better styling #}
                         {{ form|crispy }}
-                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                        
+                        <!-- Form submission button -->
+                        <button type="submit" class="btn btn-primary">
+                            Submit Application
+                        </button>
                     </form>
                 </div>
             </div>
