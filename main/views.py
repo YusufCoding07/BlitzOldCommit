@@ -227,6 +227,10 @@ def update_profile(request):
     
     return render(request, 'main/update_profile.html', {'form': form})
 
+class DriverApplicationForm(forms.Form):
+    car_model = forms.CharField(max_length=100)
+    license_file = forms.FileField(label='Driver License')  # Changed from 'document' to 'license_file'
+
 @login_required
 def driver_application(request):
     """
