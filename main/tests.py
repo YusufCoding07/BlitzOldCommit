@@ -30,7 +30,7 @@ class UserProfileTests(TestCase):
         Verifies:
         - The user has a userprofile attribute
         """
-        self.assertTrue(hasattr(self.user, 'userprofile'),
+        self.assertTrue(hasattr(self.user, 'userprofile')
             "UserProfile should be automatically created for new users"
         
     def test_profile_update(self):
