@@ -390,6 +390,23 @@ def create_ride(request):
     
     return render(request, 'main/create_ride.html', {'form': form})
 
+@login_required
+def search_rides(request):
+    if request.method == 'POST':
+        form = RideSearchForm(request.POST)
+        if form.is_valid():
+            pickup = form.cleaned_data['pickup_location']
+            dropoff = form.cleaned_data['dropoff_location']
+            rides = Transaction.objects.filter(
+                status='pending',
+                pickup_location__icontains=pickup,
+                dropoff_location__icontains=dropoff
+            ).order_by('-created_at')
+            return render(request, 'main/search_results.html', {'rides': rides})
+    else:
+        form = RideSearchForm()
+    return render(request, 'main/search_rides.html', {'form': form})
+
 def signup(request):
     """
     User signup view with profile creation.
